@@ -19,10 +19,16 @@
 #include <sensor_msgs/Range.h>
 
 // 매크로 상수 선언
-#define LIN1          6   // Left Motor
-#define LIN2          9   
-#define RIN1          10  // Right Motor
-#define RIN2          11
+#define LENA   11 // Left Motor
+#define LIN1   10   
+#define LIN2   9   
+#define RIN1   8  // Right Motor
+#define RIN2   7
+#define RENA   6
+
+#define RLED_PIN      2
+#define YLED_PIN      12
+#define GLED_PIN      13
 
 #define TRIG_PIN      3
 #define ECHO_PIN      4
@@ -43,12 +49,15 @@ void messageCb(const std_msgs::String& motor_msg) {
   
   if (MTR == "forward"){
     if (DEBUG) nh.loginfo("FORWARD");
+    controlLED(LOW, LOW, HIGH);
     forward();
   } else if (MTR == "backward"){
     if (DEBUG) nh.loginfo("BACKWARD");
+    controlLED(LOW, HIGH, LOW);
     backward();
   } else if (MTR == "stop"){
     if (DEBUG) nh.loginfo("STOP");
+    controlLED(HIGH, LOW, LOW);
     stop_pos();
   } else if (MTR == "right"){
     if (DEBUG) nh.loginfo("RIGHT");
@@ -66,17 +75,29 @@ unsigned long range_time = 0;
 
 void setup() {
   // 센서 초기화 (Motor)
+  // Motor Connect PIN
+  pinMode(LENA, OUTPUT); 
   pinMode(LIN1, OUTPUT); 
   pinMode(LIN2, OUTPUT);
   pinMode(RIN1, OUTPUT); 
   pinMode(RIN2, OUTPUT);
+  pinMode(RENA, OUTPUT); 
 
+  // Motor Speed Init 0(0V)~255(5V)
+  analogWrite(LENA, 150);
+  analogWrite(RENA, 150);
+  
   // 센서 초기화 (Ultrasound)
   pinMode(TRIG_PIN, OUTPUT);  //Arduino --> Ultrasound
   pinMode(ECHO_PIN, INPUT);   //Ultrasound --> Arduino
 
   digitalWrite(TRIG_PIN, LOW);
   digitalWrite(ECHO_PIN, LOW);
+
+  // 센서 초기화 (LED)
+  pinMode(RLED_PIN, OUTPUT);
+  pinMode(YLED_PIN, OUTPUT);
+  pinMode(GLED_PIN, OUTPUT);
 
   // 노드 초기화
   nh.initNode();
@@ -163,4 +184,11 @@ void left() {
   digitalWrite(LIN2, LOW);
   digitalWrite(RIN1, LOW);
   digitalWrite(RIN2, LOW);
+}
+
+// 3개 LED 제어 함수 ---------------------------
+void controlLED(int r, int y, int g){
+  digitalWrite(RLED_PIN, r);
+  digitalWrite(YLED_PIN, y);
+  digitalWrite(GLED_PIN, g);
 }
